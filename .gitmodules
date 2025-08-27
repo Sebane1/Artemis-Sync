@@ -1,3 +1,6 @@
 [submodule "FileRelaySystem"]
 	path = FileRelaySystem
 	url = https://github.com/Sebane1/FileRelaySystem.git
+[submodule "MCDF-Loader"]
+	path = MCDF-Loader
+	url = https://github.com/Sebane1/MCDF-Loader
