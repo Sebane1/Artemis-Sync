@@ -1,12 +1,13 @@
-﻿using Dalamud.Game.Command;
+using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using SamplePlugin.Windows;
+using ArtemisSync.Windows;
+using RelayCommonData;
 
-namespace SamplePlugin;
+namespace ArtemisSync;
 
 public sealed class Plugin : IDalamudPlugin
 {
@@ -15,15 +16,20 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
 
-    private const string CommandName = "/pmycommand";
+    private const string CommandName = "/artemissync";
 
-    public Configuration Configuration { get; init; }
+    public static Configuration Configuration { get; set; }
 
-    public readonly WindowSystem WindowSystem = new("SamplePlugin");
+    public readonly WindowSystem WindowSystem = new("Artemis Sync");
+    private static string _currentCharacterId;
+    private bool _initialized;
+
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
+    public static string CurrentCharacterId { get => _currentCharacterId; set => _currentCharacterId = value; }
 
     public Plugin()
     {
@@ -56,10 +62,30 @@ public sealed class Plugin : IDalamudPlugin
         // Use /xllog to open the log window in-game
         // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
         Log.Information($"===A cool log message from {PluginInterface.Manifest.Name}===");
+        ClientState.Login += ClientState_Login;
+        Framework.Update += Framework_Update;
     }
 
+    private void Framework_Update(IFramework framework)
+    {
+        if (!_initialized)
+        {
+            GetCharacterId();
+        }
+    }
+
+    private void ClientState_Login()
+    {
+        GetCharacterId();
+    }
+    public void GetCharacterId()
+    {
+        _currentCharacterId = Hashing.SHA512Hash(ClientState.LocalPlayer.Name.ToString());
+    }
     public void Dispose()
     {
+        ClientState.Login -= ClientState_Login;
+        Framework.Update -= Framework_Update;
         WindowSystem.RemoveAllWindows();
 
         ConfigWindow.Dispose();

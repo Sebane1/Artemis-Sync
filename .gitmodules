@@ -1,0 +1,3 @@
+[submodule "FileRelaySystem"]
+	path = FileRelaySystem
+	url = https://github.com/Sebane1/FileRelaySystem.git

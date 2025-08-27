@@ -14,4 +14,8 @@
       <Visible>false</Visible>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FileRelaySystem\RelayUploadProtocol\RelayClientProtocol.csproj" />
+  </ItemGroup>
 </Project>
