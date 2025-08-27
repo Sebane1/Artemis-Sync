@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
@@ -6,6 +7,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Lumina.Excel.Sheets;
+using McdfDataImporter;
 
 namespace ArtemisSync.Windows;
 
@@ -51,7 +53,8 @@ public class MainWindow : Window, IDisposable
                 AuthKey = _currentAuthenticationKey,
             });
             Plugin.Configuration.Save();
-
+            string filePath = Path.Combine(AppearanceAccessUtils.CacheLocation, Plugin.CurrentCharacterId + ".hex");
+            AppearanceAccessUtils.AppearanceManager.CreateMCDF(filePath);
         }
         var stringList = Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId].Select(entry => entry.ToString()).ToList();
         ImGui.ListBox(new ImU8String("servers"), ref _selectedItem, stringList, 10);

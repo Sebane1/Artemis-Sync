@@ -8,6 +8,7 @@ using ArtemisSync.Windows;
 using RelayCommonData;
 using McdfLoader;
 using Dalamud.Game.ClientState.Objects;
+using McdfDataImporter;
 
 namespace ArtemisSync;
 
@@ -81,6 +82,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             _entryPoint = new EntryPoint(PluginInterface, CommandManager, DataManager, Framework, ObjectTable, ClientState, Condition,
             ChatGui, GameGui, DtrBar, PluginLog, TargetManager, NotificationManager, TextureProvider, ContextMenu, GameInteropProvider, "");
+            AppearanceAccessUtils.CacheLocation = "I:\\QuestCache";
             ClientState.Login += ClientState_Login;
             Framework.Update += Framework_Update;
             GetCharacterId();
