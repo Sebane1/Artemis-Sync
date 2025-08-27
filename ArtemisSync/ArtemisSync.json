@@ -1,0 +1,11 @@
+{
+  "Author": "Sebby",
+  "Name": "Artemis Sync",
+  "Punchline": "Shared data synchronization with friends!",
+  "Description": "Shared data synchronization with friends!",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "sync",
+    "data",
+  ]
+}
