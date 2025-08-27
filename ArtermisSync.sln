@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RelayCommonData", "FileRela
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RelayServerProtocol", "FileRelaySystem\RelayServerProtocol\RelayServerProtocol.csproj", "{4E7415F8-513B-7A47-8E12-20BE81016BC7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McdfDataImporter", "MCDF-Loader\MCDFLoader\McdfDataImporter.csproj", "{0C3A09AE-1B16-AD86-E6EC-15865121BEAD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dependancies.API", "DependanciesAPI\DependanciesAPI\Dependancies.API.csproj", "{0F738644-6AC4-8495-006E-7E08C6A04544}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -33,6 +37,14 @@ Global
 		{4E7415F8-513B-7A47-8E12-20BE81016BC7}.Debug|x64.Build.0 = Debug|Any CPU
 		{4E7415F8-513B-7A47-8E12-20BE81016BC7}.Release|x64.ActiveCfg = Release|Any CPU
 		{4E7415F8-513B-7A47-8E12-20BE81016BC7}.Release|x64.Build.0 = Release|Any CPU
+		{0C3A09AE-1B16-AD86-E6EC-15865121BEAD}.Debug|x64.ActiveCfg = Debug|x64
+		{0C3A09AE-1B16-AD86-E6EC-15865121BEAD}.Debug|x64.Build.0 = Debug|x64
+		{0C3A09AE-1B16-AD86-E6EC-15865121BEAD}.Release|x64.ActiveCfg = Release|x64
+		{0C3A09AE-1B16-AD86-E6EC-15865121BEAD}.Release|x64.Build.0 = Release|x64
+		{0F738644-6AC4-8495-006E-7E08C6A04544}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0F738644-6AC4-8495-006E-7E08C6A04544}.Debug|x64.Build.0 = Debug|Any CPU
+		{0F738644-6AC4-8495-006E-7E08C6A04544}.Release|x64.ActiveCfg = Release|Any CPU
+		{0F738644-6AC4-8495-006E-7E08C6A04544}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

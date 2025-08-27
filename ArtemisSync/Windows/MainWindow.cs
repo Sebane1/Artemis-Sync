@@ -51,6 +51,7 @@ public class MainWindow : Window, IDisposable
                 AuthKey = _currentAuthenticationKey,
             });
             Plugin.Configuration.Save();
+
         }
         var stringList = Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId].Select(entry => entry.ToString()).ToList();
         ImGui.ListBox(new ImU8String("servers"), ref _selectedItem, stringList, 10);

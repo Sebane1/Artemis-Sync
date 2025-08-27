@@ -17,5 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FileRelaySystem\RelayUploadProtocol\RelayClientProtocol.csproj" />
+    <ProjectReference Include="..\MCDF-Loader\MCDFLoader\McdfDataImporter.csproj" />
   </ItemGroup>
 </Project>
