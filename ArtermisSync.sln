@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisSync", "ArtemisSync\ArtemisSync.csproj", "{13C812E9-0D42-4B95-8646-40EEBF30636F}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McdfDataImporter", "MCDF-Loader\MCDFLoader\McdfDataImporter.csproj", "{0C3A09AE-1B16-AD86-E6EC-15865121BEAD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dependancies.API", "DependanciesAPI\DependanciesAPI\Dependancies.API.csproj", "{0F738644-6AC4-8495-006E-7E08C6A04544}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerConfigurator", "FileRelaySystem\ServerConfigurator\ServerConfigurator.csproj", "{7FA83F36-7F66-179C-80F0-46C9D3108D72}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{0F738644-6AC4-8495-006E-7E08C6A04544}.Debug|x64.Build.0 = Debug|Any CPU
 		{0F738644-6AC4-8495-006E-7E08C6A04544}.Release|x64.ActiveCfg = Release|Any CPU
 		{0F738644-6AC4-8495-006E-7E08C6A04544}.Release|x64.Build.0 = Release|Any CPU
+		{7FA83F36-7F66-179C-80F0-46C9D3108D72}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7FA83F36-7F66-179C-80F0-46C9D3108D72}.Debug|x64.Build.0 = Debug|Any CPU
+		{7FA83F36-7F66-179C-80F0-46C9D3108D72}.Release|x64.ActiveCfg = Release|Any CPU
+		{7FA83F36-7F66-179C-80F0-46C9D3108D72}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

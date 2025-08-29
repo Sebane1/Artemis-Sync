@@ -8,6 +8,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Lumina.Excel.Sheets;
 using McdfDataImporter;
+using RelayUploadProtocol;
 
 namespace ArtemisSync.Windows;
 
@@ -55,6 +56,7 @@ public class MainWindow : Window, IDisposable
             Plugin.Configuration.Save();
             string filePath = Path.Combine(AppearanceAccessUtils.CacheLocation, Plugin.CurrentCharacterId + ".hex");
             AppearanceAccessUtils.AppearanceManager.CreateMCDF(filePath);
+            ClientManager.PutPersistedFile(Plugin.CurrentCharacterId, _currentAuthenticationKey, Plugin.CurrentCharacterId + "_Appearance", filePath);
         }
         var stringList = Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId].Select(entry => entry.ToString()).ToList();
         ImGui.ListBox(new ImU8String("servers"), ref _selectedItem, stringList, 10);
@@ -62,6 +64,5 @@ public class MainWindow : Window, IDisposable
         {
             Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId].RemoveAt(_selectedItem);
         }
-
     }
 }
