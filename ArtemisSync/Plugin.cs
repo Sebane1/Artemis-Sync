@@ -39,6 +39,7 @@ public sealed class Plugin : IDalamudPlugin
     private static string _currentCharacterId;
     private bool _initialized;
     private EntryPoint _entryPoint;
+    private bool _hasTargettedAPlayer;
 
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
@@ -75,19 +76,43 @@ public sealed class Plugin : IDalamudPlugin
         // Use /xllog to open the log window in-game
         // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
         Framework.Update += Framework_Update;
+        ClientState.TerritoryChanged += ClientState_TerritoryChanged;
+    }
+
+    private void ClientState_TerritoryChanged(ushort obj)
+    {
+       AppearanceAccessUtils.AppearanceManager.RemoveAllTemporaryCollections();
     }
 
     private void Framework_Update(IFramework framework)
     {
-        if (!_initialized)
+        if (ClientState.IsLoggedIn)
         {
-            _entryPoint = new EntryPoint(PluginInterface, CommandManager, DataManager, Framework, ObjectTable, ClientState, Condition,
-            ChatGui, GameGui, DtrBar, PluginLog, TargetManager, NotificationManager, TextureProvider, ContextMenu, GameInteropProvider, "");
-            AppearanceAccessUtils.CacheLocation = "I:\\QuestCache";
-            ClientState.Login += ClientState_Login;
-            Framework.Update += Framework_Update;
-            GetCharacterId();
-            _initialized = true;
+            if (!_initialized)
+            {
+                _entryPoint = new EntryPoint(PluginInterface, CommandManager, DataManager, Framework, ObjectTable, ClientState, Condition,
+                ChatGui, GameGui, DtrBar, PluginLog, TargetManager, NotificationManager, TextureProvider, ContextMenu, GameInteropProvider, "");
+                AppearanceAccessUtils.CacheLocation = "I:\\QuestCache";
+                ClientState.Login += ClientState_Login;
+                Framework.Update += Framework_Update;
+                GetCharacterId();
+                _initialized = true;
+            }
+            else
+            {
+                if (ClientState.LocalPlayer.TargetObject != null)
+                {
+                    if (!_hasTargettedAPlayer)
+                    {
+                        _hasTargettedAPlayer = true;
+                        AppearanceCommunicationManager.GetPlayerAppearanceOnServers(ClientState.LocalPlayer.TargetObject);
+                    }
+                }
+                else
+                {
+                    _hasTargettedAPlayer = false;
+                }
+            }
         }
     }
 
@@ -109,6 +134,7 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
+        _entryPoint?.Dispose();
     }
 
     private void OnCommand(string command, string args)

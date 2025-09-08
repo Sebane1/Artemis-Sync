@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -19,6 +20,7 @@ public class MainWindow : Window, IDisposable
     private int _selectedItem;
     private string _currentIpEntry;
     private string _currentAuthenticationKey;
+    private bool alreadyUploadingAppearance;
 
     // We give this window a hidden ID using ##.
     // The user will see "My Amazing Window" as window title,
@@ -40,30 +42,31 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
-        if (Plugin.Configuration.ServerEntries == null)
-        {
-            Plugin.Configuration.ServerEntries = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<ServerEntry>>();
-        }
-        if (!Plugin.Configuration.ServerEntries.ContainsKey(Plugin.CurrentCharacterId))
-        {
-            Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId] = new System.Collections.Generic.List<ServerEntry>();
-        }
+        AppearanceCommunicationManager.CheckForValidUserData();
         ImGui.InputText("IP Address", ref _currentIpEntry);
         ImGui.InputText("Auth Key", ref _currentAuthenticationKey);
         if (ImGui.Button("Add Server"))
         {
-            Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId].Add(new ServerEntry()
+            if (!string.IsNullOrEmpty(_currentIpEntry))
             {
-                IpAddress = _currentIpEntry,
-                AuthKey = _currentAuthenticationKey,
-            });
-            Plugin.Configuration.Save();
-            string filePath = Path.Combine(AppearanceAccessUtils.CacheLocation, Plugin.CurrentCharacterId + ".hex");
-            AppearanceAccessUtils.AppearanceManager.CreateMCDF(filePath);
-            ClientManager.PutPersistedFile(Plugin.CurrentCharacterId, _currentAuthenticationKey, Plugin.CurrentCharacterId + "_Appearance", filePath);
+                Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId].Add(new ServerEntry()
+                {
+                    IpAddress = _currentIpEntry,
+                    AuthKey = _currentAuthenticationKey,
+                });
+                Plugin.Configuration.Save();
+                AppearanceCommunicationManager.UploadAppearance(_currentIpEntry, _currentAuthenticationKey);
+                _currentIpEntry = "";
+                _currentAuthenticationKey = "";
+            }
         }
         var stringList = Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId].Select(entry => entry.ToString()).ToList();
-        ImGui.ListBox(new ImU8String("servers"), ref _selectedItem, stringList, 10);
+        ImGui.ListBox(new ImU8String("Servers"), ref _selectedItem, stringList, 10);
+        if (ImGui.Button("Upload Appearance Data"))
+        {
+            AppearanceCommunicationManager.RefreshAppearanceOnServers();
+        }
+        ImGui.SameLine();
         if (ImGui.Button("Remove Selected Server"))
         {
             Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId].RemoveAt(_selectedItem);
