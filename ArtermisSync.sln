@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dependancies.API", "Dependa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerConfigurator", "FileRelaySystem\ServerConfigurator\ServerConfigurator.csproj", "{7FA83F36-7F66-179C-80F0-46C9D3108D72}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileRelaySystem", "FileRelaySystem\FileRelaySystem\FileRelaySystem.csproj", "{875B4E4D-A307-FF0A-3FAA-598EDA7749E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,10 @@ Global
 		{7FA83F36-7F66-179C-80F0-46C9D3108D72}.Debug|x64.Build.0 = Debug|Any CPU
 		{7FA83F36-7F66-179C-80F0-46C9D3108D72}.Release|x64.ActiveCfg = Release|Any CPU
 		{7FA83F36-7F66-179C-80F0-46C9D3108D72}.Release|x64.Build.0 = Release|Any CPU
+		{875B4E4D-A307-FF0A-3FAA-598EDA7749E8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{875B4E4D-A307-FF0A-3FAA-598EDA7749E8}.Debug|x64.Build.0 = Debug|Any CPU
+		{875B4E4D-A307-FF0A-3FAA-598EDA7749E8}.Release|x64.ActiveCfg = Release|Any CPU
+		{875B4E4D-A307-FF0A-3FAA-598EDA7749E8}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

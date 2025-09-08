@@ -74,6 +74,7 @@ public sealed class Plugin : IDalamudPlugin
         // Add a simple message to the log with level set to information
         // Use /xllog to open the log window in-game
         // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
+        Framework.Update += Framework_Update;
     }
 
     private void Framework_Update(IFramework framework)
@@ -86,7 +87,7 @@ public sealed class Plugin : IDalamudPlugin
             ClientState.Login += ClientState_Login;
             Framework.Update += Framework_Update;
             GetCharacterId();
-            _initialized = false;
+            _initialized = true;
         }
     }
 

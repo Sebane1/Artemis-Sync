@@ -40,6 +40,10 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
+        if (Plugin.Configuration.ServerEntries == null)
+        {
+            Plugin.Configuration.ServerEntries = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<ServerEntry>>();
+        }
         if (!Plugin.Configuration.ServerEntries.ContainsKey(Plugin.CurrentCharacterId))
         {
             Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId] = new System.Collections.Generic.List<ServerEntry>();
