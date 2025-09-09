@@ -4,6 +4,7 @@ using McdfDataImporter;
 using RelayCommonData;
 using RelayUploadProtocol;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,8 @@ namespace ArtemisSync
     public class AppearanceCommunicationManager
     {
         private static bool alreadyUploadingAppearance;
+        private static ConcurrentDictionary<string, long> alreadySyncedUsers = new ConcurrentDictionary<string, long>();
+
 
         public static void CheckForValidUserData()
         {
@@ -53,7 +56,7 @@ namespace ArtemisSync
                 {
                     string filePath = Path.Combine(AppearanceAccessUtils.CacheLocation, Plugin.CurrentCharacterId + ".hex");
                     AppearanceAccessUtils.AppearanceManager.CreateMCDF(filePath);
-                    string appearanceFile = Plugin.CurrentCharacterId + "_Appearance";
+                    string appearanceFile = "_Appearance";
                     string passkey = Hashing.SHA512Hash(appearanceFile + Plugin.CurrentCharacterId + ipAddress);
                     await ClientManager.PutPersistedFile(ipAddress, Plugin.CurrentCharacterId, authenticationKey, appearanceFile, filePath, passkey);
                     alreadyUploadingAppearance = false;
@@ -87,14 +90,25 @@ namespace ArtemisSync
         {
             try
             {
-                string hash = Hashing.SHA512Hash(gameObject.Name.TextValue);
-                string appearanceFile = hash + "_Appearance";
-                string passkey = Hashing.SHA512Hash(appearanceFile + hash + ipAddress);
-                string fileData = await ClientManager.GetPersistedFile(ipAddress, Plugin.CurrentCharacterId, authenticationKey, appearanceFile, AppearanceAccessUtils.CacheLocation, passkey);
-                await Plugin.Framework.RunOnFrameworkThread(() =>
-                 {
-                     AppearanceAccessUtils.AppearanceManager.LoadAppearance(fileData, gameObject);
-                 });
+                string targetSessionId = Hashing.SHA512Hash(gameObject.Name.TextValue);
+                string appearanceFile = "_Appearance";
+                string passkey = Hashing.SHA512Hash(appearanceFile + targetSessionId + ipAddress);
+                bool gotUserData = alreadySyncedUsers.ContainsKey(targetSessionId);
+                long lastTimeChanged = await ClientManager.CheckLastTimePersistedFileChanged(ipAddress, Plugin.CurrentCharacterId, authenticationKey, targetSessionId, appearanceFile);
+                bool fileChanged = false;
+                if (gotUserData)
+                {
+                    fileChanged = lastTimeChanged > alreadySyncedUsers[targetSessionId];
+                }
+                if (!gotUserData || fileChanged)
+                {
+                    alreadySyncedUsers[targetSessionId] = lastTimeChanged;
+                    string fileData = await ClientManager.GetPersistedFile(ipAddress, Plugin.CurrentCharacterId, authenticationKey, targetSessionId, appearanceFile, AppearanceAccessUtils.CacheLocation, passkey);
+                    await Plugin.Framework.RunOnFrameworkThread(async () =>
+                     {
+                         AppearanceAccessUtils.AppearanceManager.LoadAppearance(fileData, gameObject);
+                     });
+                }
                 return true;
             }
             catch (Exception e)

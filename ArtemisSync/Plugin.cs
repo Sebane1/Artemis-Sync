@@ -9,6 +9,8 @@ using RelayCommonData;
 using McdfLoader;
 using Dalamud.Game.ClientState.Objects;
 using McdfDataImporter;
+using System.Diagnostics;
+using System;
 
 namespace ArtemisSync;
 
@@ -32,6 +34,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ICondition Condition { get; private set; } = null!;
 
     private const string CommandName = "/artemissync";
+    private const string UploadCommandName = "/uploadchanges";
 
     public static Configuration Configuration { get; set; }
 
@@ -40,7 +43,7 @@ public sealed class Plugin : IDalamudPlugin
     private bool _initialized;
     private EntryPoint _entryPoint;
     private bool _hasTargettedAPlayer;
-
+    Stopwatch _appearancePollingTimer = new Stopwatch();
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
     public static string CurrentCharacterId { get => _currentCharacterId; set => _currentCharacterId = value; }
@@ -62,6 +65,10 @@ public sealed class Plugin : IDalamudPlugin
         {
             HelpMessage = "A useful message to display in /xlhelp"
         });
+        CommandManager.AddHandler(UploadCommandName, new CommandInfo(UploadChanges)
+        {
+            HelpMessage = "Uploads current user appearance."
+        });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
 
@@ -79,9 +86,14 @@ public sealed class Plugin : IDalamudPlugin
         ClientState.TerritoryChanged += ClientState_TerritoryChanged;
     }
 
+    private void UploadChanges(string command, string arguments)
+    {
+        AppearanceCommunicationManager.RefreshAppearanceOnServers();
+    }
+
     private void ClientState_TerritoryChanged(ushort obj)
     {
-       AppearanceAccessUtils.AppearanceManager.RemoveAllTemporaryCollections();
+        AppearanceAccessUtils.AppearanceManager.RemoveAllTemporaryCollections();
     }
 
     private void Framework_Update(IFramework framework)
@@ -111,6 +123,17 @@ public sealed class Plugin : IDalamudPlugin
                 else
                 {
                     _hasTargettedAPlayer = false;
+                }
+                if (_appearancePollingTimer.ElapsedMilliseconds > 5000 || !_appearancePollingTimer.IsRunning)
+                {
+                    foreach (var item in ObjectTable.PlayerObjects)
+                    {
+                        if (item.ObjectIndex > 0)
+                        {
+                            AppearanceCommunicationManager.GetPlayerAppearanceOnServers(item);
+                        }
+                    }
+                    _appearancePollingTimer.Restart();
                 }
             }
         }
