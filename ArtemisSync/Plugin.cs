@@ -11,6 +11,8 @@ using Dalamud.Game.ClientState.Objects;
 using McdfDataImporter;
 using System.Diagnostics;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace ArtemisSync;
 
@@ -46,6 +48,7 @@ public sealed class Plugin : IDalamudPlugin
     Stopwatch _appearancePollingTimer = new Stopwatch();
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
+    private Queue<Tuple<string, string>> _appearanceQueue = new Queue<Tuple<string, string>>();
     public static string CurrentCharacterId { get => _currentCharacterId; set => _currentCharacterId = value; }
 
     public Plugin()
@@ -83,7 +86,27 @@ public sealed class Plugin : IDalamudPlugin
         // Use /xllog to open the log window in-game
         // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
         Framework.Update += Framework_Update;
-        ClientState.TerritoryChanged += ClientState_TerritoryChanged;
+        SseClient.OnSubscribedFileChanged += SseClient_OnSubscribedFileChanged;
+    }
+
+    private void SseClient_OnSubscribedFileChanged(object? sender, Tuple<string, string, long> e)
+    {
+        if (ClientState.IsLoggedIn)
+        {
+            Framework.Run(() =>
+            {
+                foreach (var item in ObjectTable.PlayerObjects)
+                {
+                    if (item.ObjectIndex > 0)
+                    {
+                        if (e.Item1 == Hashing.SHA512Hash(item.Name.TextValue))
+                        {
+                            AppearanceCommunicationManager.GetPlayerAppearanceOnServers(item);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void UploadChanges(string command, string arguments)
@@ -93,49 +116,56 @@ public sealed class Plugin : IDalamudPlugin
 
     private void ClientState_TerritoryChanged(ushort obj)
     {
-        AppearanceAccessUtils.AppearanceManager.RemoveAllTemporaryCollections();
+        try
+        {
+            AppearanceAccessUtils.AppearanceManager.RemoveAllTemporaryCollections();
+            SubscribeGameObjects();
+        }
+        catch (Exception e)
+        {
+            PluginLog.Warning(e, e.Message);
+        }
     }
 
     private void Framework_Update(IFramework framework)
     {
-        if (ClientState.IsLoggedIn)
+        try
         {
-            if (!_initialized)
+            if (ClientState.IsLoggedIn && ClientState.LocalPlayer != null)
             {
-                _entryPoint = new EntryPoint(PluginInterface, CommandManager, DataManager, Framework, ObjectTable, ClientState, Condition,
-                ChatGui, GameGui, DtrBar, PluginLog, TargetManager, NotificationManager, TextureProvider, ContextMenu, GameInteropProvider, "");
-                AppearanceAccessUtils.CacheLocation = "I:\\QuestCache";
-                ClientState.Login += ClientState_Login;
-                Framework.Update += Framework_Update;
-                GetCharacterId();
-                _initialized = true;
-            }
-            else
-            {
-                if (ClientState.LocalPlayer.TargetObject != null)
+                if (!_initialized)
                 {
-                    if (!_hasTargettedAPlayer)
-                    {
-                        _hasTargettedAPlayer = true;
-                        AppearanceCommunicationManager.GetPlayerAppearanceOnServers(ClientState.LocalPlayer.TargetObject);
-                    }
+                    _entryPoint = new EntryPoint(PluginInterface, CommandManager, DataManager, Framework, ObjectTable, ClientState, Condition,
+                    ChatGui, GameGui, DtrBar, PluginLog, TargetManager, NotificationManager, TextureProvider, ContextMenu, GameInteropProvider, "");
+                    AppearanceAccessUtils.CacheLocation = "I:\\QuestCache";
+                    ClientState.Login += ClientState_Login;
+                    ClientState.TerritoryChanged += ClientState_TerritoryChanged;
+                    GetCharacterId();
+                    AppearanceCommunicationManager.StartSSEListeners();
+                    SubscribeGameObjects();
+                    _initialized = true;
                 }
                 else
                 {
-                    _hasTargettedAPlayer = false;
-                }
-                if (_appearancePollingTimer.ElapsedMilliseconds > 5000 || !_appearancePollingTimer.IsRunning)
-                {
-                    foreach (var item in ObjectTable.PlayerObjects)
+                    if (ClientState.LocalPlayer.TargetObject != null)
                     {
-                        if (item.ObjectIndex > 0)
+                        if (!_hasTargettedAPlayer)
                         {
-                            AppearanceCommunicationManager.GetPlayerAppearanceOnServers(item);
+                            _hasTargettedAPlayer = true;
+                            AppearanceCommunicationManager.GetPlayerAppearanceOnServers(ClientState.LocalPlayer.TargetObject);
+                            AppearanceCommunicationManager.SubscribeToAppearanceEventOnServers(Hashing.SHA512Hash(ClientState.LocalPlayer.Name.TextValue));
                         }
                     }
-                    _appearancePollingTimer.Restart();
+                    else
+                    {
+                        _hasTargettedAPlayer = false;
+                    }
                 }
             }
+        }
+        catch (Exception e)
+        {
+            PluginLog.Warning(e, e.Message);
         }
     }
 
@@ -145,8 +175,37 @@ public sealed class Plugin : IDalamudPlugin
     }
     public void GetCharacterId()
     {
-        _currentCharacterId = Hashing.SHA512Hash(ClientState.LocalPlayer.Name.ToString());
+        try
+        {
+            _currentCharacterId = Hashing.SHA512Hash(ClientState.LocalPlayer.Name.ToString());
+        }
+        catch (Exception e)
+        {
+
+        }
     }
+
+    public void SubscribeGameObjects()
+    {
+        Framework.Run(() =>
+        {
+            foreach (var item in ObjectTable.PlayerObjects)
+            {
+                if (item.ObjectIndex > 0)
+                {
+                    try
+                    {
+                        AppearanceCommunicationManager.SubscribeToAppearanceEventOnServers(Hashing.SHA512Hash(item.Name.ToString()));
+                    }
+                    catch (Exception e)
+                    {
+                        PluginLog.Warning(e, e.Message);
+                    }
+                }
+            }
+        });
+    }
+
     public void Dispose()
     {
         ClientState.Login -= ClientState_Login;

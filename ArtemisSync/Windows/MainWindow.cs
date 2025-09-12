@@ -53,8 +53,10 @@ public class MainWindow : Window, IDisposable
                 {
                     IpAddress = _currentIpEntry,
                     AuthKey = _currentAuthenticationKey,
+                    UtcJoinTime = DateTime.UtcNow.Ticks
                 });
                 Plugin.Configuration.Save();
+                AppearanceCommunicationManager.StartSSEListener(_currentIpEntry, Plugin.CurrentCharacterId);
                 AppearanceCommunicationManager.UploadAppearance(_currentIpEntry, _currentAuthenticationKey);
                 _currentIpEntry = "";
                 _currentAuthenticationKey = "";

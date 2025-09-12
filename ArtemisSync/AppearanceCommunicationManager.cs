@@ -19,6 +19,11 @@ namespace ArtemisSync
         private static ConcurrentDictionary<string, long> alreadySyncedUsers = new ConcurrentDictionary<string, long>();
 
 
+        public void Initialize()
+        {
+
+        }
+
         public static void CheckForValidUserData()
         {
             if (Plugin.Configuration.ServerEntries == null)
@@ -64,6 +69,35 @@ namespace ArtemisSync
             }
         }
 
+        public static async void SubscribeToAppearanceEventOnServers(string targetSessionId)
+        {
+            foreach (var item in Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId])
+            {
+                await SseClient.SubscribeAsync(item.IpAddress, Plugin.CurrentCharacterId, item.AuthKey, targetSessionId, "_Appearance");
+            }
+        }
+
+        public static async void SubscribeToAppearanceEventOnServer(string ipAddress, string authKey, string targetSessionId)
+        {
+            await SseClient.SubscribeAsync(ipAddress, Plugin.CurrentCharacterId, ipAddress, targetSessionId, "_Appearance");
+        }
+
+        /// <summary>
+        /// Uploads appearance data on all connected servers
+        /// </summary>
+        public static void StartSSEListeners()
+        {
+            foreach (var item in Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId])
+            {
+                StartSSEListener(item.IpAddress, Plugin.CurrentCharacterId);
+            }
+        }
+
+        public static async void StartSSEListener(string ipAddress, string sessionId)
+        {
+            await SseClient.ListenForFileChanges(ipAddress, sessionId);
+        }
+
         /// <summary>
         /// Checks servers until one of them gives us appearance data for the player we've asked for.
         /// </summary>
@@ -104,7 +138,7 @@ namespace ArtemisSync
                 {
                     alreadySyncedUsers[targetSessionId] = lastTimeChanged;
                     string fileData = await ClientManager.GetPersistedFile(ipAddress, Plugin.CurrentCharacterId, authenticationKey, targetSessionId, appearanceFile, AppearanceAccessUtils.CacheLocation, passkey);
-                    await Plugin.Framework.RunOnFrameworkThread(async () =>
+                    await Plugin.Framework.Run(async () =>
                      {
                          AppearanceAccessUtils.AppearanceManager.LoadAppearance(fileData, gameObject);
                      });
