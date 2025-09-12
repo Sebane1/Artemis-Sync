@@ -4,3 +4,6 @@
 [submodule "MCDF-Loader"]
 	path = MCDF-Loader
 	url = https://github.com/Sebane1/MCDF-Loader
+[submodule "ArtemisSync/Translator"]
+	path = ArtemisSync/Translator
+	url = https://github.com/Sebane1/Translator.git

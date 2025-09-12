@@ -16,7 +16,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Glamourer.Api" Version="2.6.0" />
+    <PackageReference Include="Penumbra.Api" Version="5.12.0" />
+    <PackageReference Include="Penumbra.String" Version="1.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FileRelaySystem\RelayUploadProtocol\RelayClientProtocol.csproj" />
     <ProjectReference Include="..\MCDF-Loader\MCDFLoader\McdfDataImporter.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="DalamudPackager" Version="13.0.0" />
   </ItemGroup>
 </Project>

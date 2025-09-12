@@ -73,7 +73,10 @@ namespace ArtemisSync
         {
             foreach (var item in Plugin.Configuration.ServerEntries[Plugin.CurrentCharacterId])
             {
-                await SseClient.SubscribeAsync(item.IpAddress, Plugin.CurrentCharacterId, item.AuthKey, targetSessionId, "_Appearance");
+                if (await SseClient.SubscribeAsync(item.IpAddress, Plugin.CurrentCharacterId, item.AuthKey, targetSessionId, "_Appearance"))
+                {
+                    break;
+                }
             }
         }
 

@@ -1,18 +1,21 @@
+using ArtemisSync.Windows;
+using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.Command;
+using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
-using System.IO;
-using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using ArtemisSync.Windows;
-using RelayCommonData;
-using McdfLoader;
-using Dalamud.Game.ClientState.Objects;
 using McdfDataImporter;
-using System.Diagnostics;
+using McdfLoader;
+using McdfLoader.Services.Mediator;
+using Penumbra.Api.IpcSubscribers;
+using RelayCommonData;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using TranslatorCore;
 
 namespace ArtemisSync;
 
@@ -54,7 +57,6 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin()
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-
         // You might normally want to embed resources and load them from the manifest stream
         var goatImagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
 
@@ -87,6 +89,21 @@ public sealed class Plugin : IDalamudPlugin
         // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
         Framework.Update += Framework_Update;
         SseClient.OnSubscribedFileChanged += SseClient_OnSubscribedFileChanged;
+        Penumbra.Api.IpcSubscribers.ModSettingChanged.Subscriber(PluginInterface).Event += Plugin_Event;
+        Penumbra.Api.IpcSubscribers.GameObjectRedrawn.Subscriber(PluginInterface).Event += Plugin_Event1;
+    }
+
+    private void Plugin_Event1(nint arg1, int arg2)
+    {
+        if (arg2 == 0)
+        {
+            AppearanceCommunicationManager.RefreshAppearanceOnServers();
+        }
+    }
+
+    private void Plugin_Event(Penumbra.Api.Enums.ModSettingChange arg1, Guid arg2, string arg3, bool arg4)
+    {
+        //   throw new NotImplementedException();
     }
 
     private void SseClient_OnSubscribedFileChanged(object? sender, Tuple<string, string, long> e)
@@ -118,12 +135,31 @@ public sealed class Plugin : IDalamudPlugin
     {
         try
         {
-            AppearanceAccessUtils.AppearanceManager.RemoveAllTemporaryCollections();
-            SubscribeGameObjects();
+            if (!string.IsNullOrEmpty(Configuration.CacheFolder))
+            {
+                AppearanceAccessUtils.AppearanceManager.RemoveAllTemporaryCollections();
+                SubscribeGameObjects();
+                DisposeData();
+            }
         }
         catch (Exception e)
         {
             PluginLog.Warning(e, e.Message);
+        }
+    }
+
+    private void DisposeData()
+    {
+        foreach (var item in Directory.GetFiles(Configuration.CacheFolder))
+        {
+            try
+            {
+                File.Delete(item);
+            }
+            catch
+            {
+
+            }
         }
     }
 
@@ -137,7 +173,8 @@ public sealed class Plugin : IDalamudPlugin
                 {
                     _entryPoint = new EntryPoint(PluginInterface, CommandManager, DataManager, Framework, ObjectTable, ClientState, Condition,
                     ChatGui, GameGui, DtrBar, PluginLog, TargetManager, NotificationManager, TextureProvider, ContextMenu, GameInteropProvider, "");
-                    AppearanceAccessUtils.CacheLocation = "I:\\QuestCache";
+                    AppearanceAccessUtils.CacheLocation = Configuration.CacheFolder;
+                    Translator.UiLanguage = Plugin.Configuration.Language;
                     ClientState.Login += ClientState_Login;
                     ClientState.TerritoryChanged += ClientState_TerritoryChanged;
                     GetCharacterId();
@@ -196,6 +233,7 @@ public sealed class Plugin : IDalamudPlugin
                     try
                     {
                         AppearanceCommunicationManager.SubscribeToAppearanceEventOnServers(Hashing.SHA512Hash(item.Name.ToString()));
+                        AppearanceCommunicationManager.GetPlayerAppearanceOnServers(item);
                     }
                     catch (Exception e)
                     {
@@ -208,6 +246,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
+        DisposeData();
         ClientState.Login -= ClientState_Login;
         Framework.Update -= Framework_Update;
         WindowSystem.RemoveAllWindows();
